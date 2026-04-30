@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Business Card</title>
+  <style>
+    /* Reset & base */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --theme: #1a73e8;
+      --theme-dark: #1558b0;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(0,0,0,.12);
+      --gap: 16px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1c1c1e;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    #site-header {
+      background: var(--theme);
+      color: #fff;
+      padding: 16px var(--gap);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    #header-logo {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: rgba(255,255,255,.15);
+      display: none;
+    }
+    #header-logo.visible { display: block; }
+
+    #header-title {
+      flex: 1;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+
+    /* Mode toggle */
+    #mode-toggle {
+      display: flex;
+      background: rgba(255,255,255,.2);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .mode-btn {
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,.75);
+      font-size: .85rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+      white-space: nowrap;
+    }
+    .mode-btn.active {
+      background: rgba(255,255,255,.95);
+      color: var(--theme);
+      border-radius: 20px;
+    }
+
+    /* Main layout */
+    main {
+      flex: 1;
+      padding: var(--gap);
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Panels */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Card */
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: var(--gap);
+    }
+
+    .card-title {
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #888;
+      margin-bottom: 14px;
+    }
+
+    /* Form fields */
+    .field-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .field-row:last-child { margin-bottom: 0; }
+
+    .field-icon {
+      font-size: 1.25rem;
+      width: 32px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .field-row label {
+      display: none; /* shown via placeholder */
+    }
+
+    .field-row input[type="text"],
+    .field-row input[type="email"],
+    .field-row input[type="url"],
+    .field-row input[type="tel"],
+    .field-row textarea {
+      flex: 1;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s;
+      font-family: inherit;
+    }
+    .field-row input:focus,
+    .field-row textarea:focus {
+      border-color: var(--theme);
+    }
+    .field-row textarea {
+      resize: vertical;
+      min-height: 72px;
+    }
+
+    /* Settings */
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .settings-row:last-child { margin-bottom: 0; }
+
+    .settings-label {
+      font-size: .95rem;
+      font-weight: 500;
+    }
+
+    input[type="color"] {
+      width: 44px;
+      height: 36px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 2px;
+      background: #f5f5f5;
+    }
+
+    .img-input-group {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .img-input-group input[type="text"] {
+      flex: 1;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: .85rem;
+      outline: none;
+      transition: border-color .2s;
+      min-width: 0;
+    }
+    .img-input-group input[type="text"]:focus { border-color: var(--theme); }
+
+    .btn-sm {
+      border: none;
+      background: var(--theme);
+      color: #fff;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .2s;
+    }
+    .btn-sm:hover { background: var(--theme-dark); }
+
+    /* QR viewer (mobile-first) */
+    #qr-panel {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+    #qr-panel.active { display: flex; }
+
+    #qr-counter {
+      font-size: .85rem;
+      color: #888;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    #qr-card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #qr-field-label {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--theme);
+      text-align: center;
+    }
+
+    #qr-field-value {
+      font-size: .85rem;
+      color: #555;
+      text-align: center;
+      word-break: break-all;
+      max-width: 280px;
+    }
+
+    #qr-canvas-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #qr-canvas-wrapper canvas {
+      border-radius: 8px;
+      max-width: 100%;
+    }
+
+    #qr-nav {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-top: 8px;
+    }
+
+    .nav-btn {
+      background: var(--theme);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 52px;
+      height: 52px;
+      font-size: 1.4rem;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .nav-btn:hover { background: var(--theme-dark); }
+    .nav-btn:active { transform: scale(.93); }
+    .nav-btn:disabled { background: #ccc; cursor: default; }
+
+    #qr-empty {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 48px 24px;
+      text-align: center;
+      color: #888;
+      font-size: .95rem;
+      width: 100%;
+      max-width: 380px;
+    }
+    #qr-empty .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+    /* Download button */
+    #btn-download {
+      margin-top: 12px;
+      background: transparent;
+      border: 2px solid var(--theme);
+      color: var(--theme);
+      border-radius: 8px;
+      padding: 8px 20px;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+    }
+    #btn-download:hover { background: var(--theme); color: #fff; }
+
+    /* Desktop enhancements */
+    @media (min-width: 640px) {
+      #qr-card { max-width: 460px; }
+      #qr-canvas-wrapper canvas { width: 300px !important; height: 300px !important; }
+    }
+
+    /* Hidden file input */
+    #logo-file-input { display: none; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header id="site-header">
+  <img id="header-logo" alt="Logo" />
+  <span id="header-title">Digital Business Card</span>
+  <div id="mode-toggle">
+    <button class="mode-btn active" data-mode="edit">Edit</button>
+    <button class="mode-btn" data-mode="qr">QR Codes</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- Edit panel -->
+  <div id="edit-panel" class="panel active">
+
+    <!-- Contact info -->
+    <div class="card">
+      <div class="card-title">Contact Information</div>
+
+      <div class="field-row">
+        <span class="field-icon">👤</span>
+        <label for="f-name">Name</label>
+        <input id="f-name" type="text" placeholder="Full Name" data-key="name" />
+      </div>
+
+      <div class="field-row">
+        <span class="field-icon">📧</span>
+        <label for="f-email">Email</label>
+        <input id="f-email" type="email" placeholder="Email Address" data-key="email" />
+      </div>
+
+      <div class="field-row">
+        <span class="field-icon">📱</span>
+        <label for="f-phone">Phone</label>
+        <input id="f-phone" type="tel" placeholder="Phone Number" data-key="phone" />
+      </div>
+
+      <div class="field-row">
+        <span class="field-icon">🌐</span>
+        <label for="f-website">Personal Website</label>
+        <input id="f-website" type="url" placeholder="https://yourwebsite.com" data-key="website" />
+      </div>
+
+      <div class="field-row">
+        <span class="field-icon">🏢</span>
+        <label for="f-company">Company Website</label>
+        <input id="f-company" type="url" placeholder="https://yourcompany.com" data-key="company" />
+      </div>
+
+      <div class="field-row">
+        <span class="field-icon">💼</span>
+        <label for="f-linkedin">LinkedIn</label>
+        <input id="f-linkedin" type="url" placeholder="https://linkedin.com/in/yourprofile" data-key="linkedin" />
+      </div>
+
+      <div class="field-row">
+        <span class="field-icon">🐙</span>
+        <label for="f-github">GitHub</label>
+        <input id="f-github" type="url" placeholder="https://github.com/yourusername" data-key="github" />
+      </div>
+
+      <div class="field-row">
+        <span class="field-icon">📍</span>
+        <label for="f-address">Address</label>
+        <textarea id="f-address" placeholder="Street, City, State, ZIP" data-key="address"></textarea>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="card">
+      <div class="card-title">Appearance</div>
+
+      <div class="settings-row">
+        <span class="settings-label">🎨 Theme Color</span>
+        <input type="color" id="color-picker" value="#1a73e8" />
+      </div>
+
+      <div class="settings-row" style="flex-wrap:wrap; gap:8px;">
+        <span class="settings-label">🖼️ Header Logo</span>
+        <div class="img-input-group">
+          <input type="text" id="logo-url-input" placeholder="Paste image URL…" />
+          <button class="btn-sm" id="btn-upload-logo">Upload</button>
+        </div>
+        <input type="file" id="logo-file-input" accept="image/*" />
+      </div>
+
+      <div class="settings-row" style="justify-content:flex-end;">
+        <button class="btn-sm" id="btn-clear-logo" style="background:#e53935;">Remove Logo</button>
+      </div>
+    </div>
+
+    <!-- Data export -->
+    <div class="card">
+      <div class="card-title">Data</div>
+      <div class="settings-row">
+        <span class="settings-label">📤 Export contact data</span>
+        <button class="btn-sm" id="btn-export-json">Export JSON</button>
+      </div>
+    </div>
+
+  </div><!-- /edit-panel -->
+
+  <!-- QR panel -->
+  <div id="qr-panel" class="panel">
+
+    <div id="qr-counter"></div>
+
+    <div id="qr-card" style="display:none">
+      <div id="qr-field-label"></div>
+      <div id="qr-canvas-wrapper">
+        <canvas id="qr-canvas"></canvas>
+      </div>
+      <div id="qr-field-value"></div>
+      <div id="qr-nav">
+        <button class="nav-btn" id="btn-prev" title="Previous">&#8592;</button>
+        <button class="nav-btn" id="btn-next" title="Next">&#8594;</button>
+      </div>
+      <button id="btn-download">⬇ Download QR</button>
+    </div>
+
+    <div id="qr-empty" style="display:none">
+      <div class="empty-icon">📋</div>
+      <p>Fill in at least one field in the Edit tab to generate QR codes.</p>
+    </div>
+
+  </div><!-- /qr-panel -->
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"
+        integrity="sha384-OLBgp1GsljhM2TJ+sbHjaiH9txEUvgdDTAzHv2P24donTt6/529l+9Ua0vFImLlb"
+        crossorigin="anonymous"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* Storage key */
+  const STORAGE_KEY = 'dbc_data';
+
+  /* Field definitions */
+  const FIELDS = [
+    { key: 'name',     label: 'Name',             prefix: '' },
+    { key: 'email',    label: 'Email',             prefix: 'mailto:' },
+    { key: 'phone',    label: 'Phone',             prefix: 'tel:' },
+    { key: 'website',  label: 'Personal Website',  prefix: '' },
+    { key: 'company',  label: 'Company Website',   prefix: '' },
+    { key: 'linkedin', label: 'LinkedIn',          prefix: '' },
+    { key: 'github',   label: 'GitHub',            prefix: '' },
+    { key: 'address',  label: 'Address',           prefix: '' },
+  ];
+
+  /* State */
+  let data = {};
+  let qrItems = [];    // [{label, value, qrContent}]
+  let qrIndex = 0;
+
+  /* DOM refs */
+  const editPanel   = document.getElementById('edit-panel');
+  const qrPanel     = document.getElementById('qr-panel');
+  const qrCard      = document.getElementById('qr-card');
+  const qrEmpty     = document.getElementById('qr-empty');
+  const qrCounter   = document.getElementById('qr-counter');
+  const qrLabel     = document.getElementById('qr-field-label');
+  const qrValue     = document.getElementById('qr-field-value');
+  const qrCanvas    = document.getElementById('qr-canvas');
+  const btnPrev     = document.getElementById('btn-prev');
+  const btnNext     = document.getElementById('btn-next');
+  const btnDownload = document.getElementById('btn-download');
+  const colorPicker = document.getElementById('color-picker');
+  const logoUrl     = document.getElementById('logo-url-input');
+  const logoFile    = document.getElementById('logo-file-input');
+  const btnUpload   = document.getElementById('btn-upload-logo');
+  const btnClear    = document.getElementById('btn-clear-logo');
+  const btnExport   = document.getElementById('btn-export-json');
+  const headerLogo  = document.getElementById('header-logo');
+  const modeBtns    = document.querySelectorAll('.mode-btn');
+
+  /* Load from localStorage */
+  function load() {
+    try {
+      data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    } catch (e) {
+      data = {};
+    }
+
+    // Populate fields
+    FIELDS.forEach(({ key }) => {
+      const el = document.querySelector(`[data-key="${key}"]`);
+      if (el && data[key]) el.value = data[key];
+    });
+
+    // Theme color
+    if (data.themeColor) {
+      colorPicker.value = data.themeColor;
+      applyTheme(data.themeColor);
+    }
+
+    // Logo
+    if (data.logoSrc) {
+      applyLogo(data.logoSrc);
+      logoUrl.value = data.logoSrc.startsWith('data:') ? '' : data.logoSrc;
+    }
+  }
+
+  /* Save to localStorage */
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  /* Theme */
+  function applyTheme(hex) {
+    document.documentElement.style.setProperty('--theme', hex);
+    // derive a darker shade (~20% darker) for hover
+    const dark = darken(hex, 0.2);
+    document.documentElement.style.setProperty('--theme-dark', dark);
+  }
+
+  function darken(hex, amount) {
+    let r = parseInt(hex.slice(1, 3), 16);
+    let g = parseInt(hex.slice(3, 5), 16);
+    let b = parseInt(hex.slice(5, 7), 16);
+    r = Math.max(0, Math.round(r * (1 - amount)));
+    g = Math.max(0, Math.round(g * (1 - amount)));
+    b = Math.max(0, Math.round(b * (1 - amount)));
+    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+  }
+
+  /* URL validation helper */
+  function isSafeImageUrl(url) {
+    try {
+      const u = new URL(url);
+      return u.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }
+
+  /* Logo */
+  function applyLogo(src) {
+    if (!src) {
+      headerLogo.classList.remove('visible');
+      headerLogo.src = '';
+      return;
+    }
+    headerLogo.src = src;
+    headerLogo.classList.add('visible');
+  }
+
+  /* vCard helpers */
+  function escapeVCard(str) {
+    return str
+      .replace(/\\/g, '\\\\')
+      .replace(/,/g, '\\,')
+      .replace(/;/g, '\\;')
+      .replace(/\n/g, '\\n');
+  }
+
+  function buildVCard() {
+    const lines = ['BEGIN:VCARD', 'VERSION:3.0'];
+    if (data.name)     lines.push('FN:' + escapeVCard(data.name.trim()));
+    if (data.email)    lines.push('EMAIL;TYPE=INTERNET:' + data.email.trim());
+    if (data.phone)    lines.push('TEL;TYPE=CELL:' + data.phone.trim());
+    if (data.website)  lines.push('URL:' + data.website.trim());
+    if (data.company)  lines.push('URL;TYPE=WORK:' + data.company.trim());
+    if (data.linkedin) lines.push('X-SOCIALPROFILE;TYPE=linkedin:' + data.linkedin.trim());
+    if (data.github)   lines.push('X-SOCIALPROFILE;TYPE=github:' + data.github.trim());
+    if (data.address) {
+      const addr = data.address.trim().replace(/\r?\n/g, ', ');
+      lines.push('ADR;TYPE=HOME:;;' + escapeVCard(addr) + ';;;;');
+    }
+    lines.push('END:VCARD');
+    return lines.join('\r\n');
+  }
+
+  /* Build QR items list */
+  function buildQrItems() {
+    qrItems = FIELDS
+      .filter(({ key }) => data[key] && data[key].trim())
+      .map(({ key, label, prefix }) => {
+        const raw = data[key].trim();
+        const qrContent = prefix && !raw.startsWith(prefix) ? prefix + raw : raw;
+        return { label, value: raw, qrContent };
+      });
+
+    // Prepend a Contact Card (vCard) QR when any field is filled
+    if (qrItems.length > 0) {
+      qrItems.unshift({
+        label: 'Contact Card',
+        value: 'Scan to save all contact details',
+        qrContent: buildVCard(),
+      });
+    }
+  }
+
+  /* Render QR */
+  function renderQr() {
+    buildQrItems();
+
+    if (qrItems.length === 0) {
+      qrCard.style.display = 'none';
+      qrEmpty.style.display = '';
+      qrCounter.textContent = '';
+      return;
+    }
+
+    qrCard.style.display = '';
+    qrEmpty.style.display = 'none';
+
+    // Clamp index
+    qrIndex = Math.max(0, Math.min(qrIndex, qrItems.length - 1));
+
+    const item = qrItems[qrIndex];
+    qrLabel.textContent = item.label;
+    qrValue.textContent = item.value;
+    qrCounter.textContent = `${qrIndex + 1} of ${qrItems.length}`;
+
+    btnPrev.disabled = qrIndex === 0;
+    btnNext.disabled = qrIndex === qrItems.length - 1;
+
+    // QR size: viewport minus ~96px (card padding 24px×2 + nav/counter margins)
+    const size = Math.min(window.innerWidth - 96, 280);
+
+    QRCode.toCanvas(qrCanvas, item.qrContent, {
+      width: size,
+      margin: 2,
+      color: {
+        dark: '#1c1c1e',
+        light: '#ffffff',
+      },
+    }, function (err) {
+      if (err) console.error('QR error:', err);
+    });
+  }
+
+  /* Mode switching */
+  function switchMode(mode) {
+    modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+    if (mode === 'edit') {
+      editPanel.classList.add('active');
+      qrPanel.classList.remove('active');
+    } else {
+      editPanel.classList.remove('active');
+      qrPanel.classList.add('active');
+      qrIndex = 0;
+      renderQr();
+    }
+  }
+
+  /* Event listeners */
+
+  // Field inputs → save
+  FIELDS.forEach(({ key }) => {
+    const el = document.querySelector(`[data-key="${key}"]`);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      data[key] = el.value;
+      save();
+    });
+  });
+
+  // Mode toggle
+  modeBtns.forEach(btn => {
+    btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+  });
+
+  // Prev / Next
+  btnPrev.addEventListener('click', () => { qrIndex--; renderQr(); });
+  btnNext.addEventListener('click', () => { qrIndex++; renderQr(); });
+
+  // Keyboard navigation (when QR panel is active)
+  document.addEventListener('keydown', (e) => {
+    if (!qrPanel.classList.contains('active')) return;
+    if (e.key === 'ArrowLeft' && qrIndex > 0)               { qrIndex--; renderQr(); }
+    if (e.key === 'ArrowRight' && qrIndex < qrItems.length - 1) { qrIndex++; renderQr(); }
+  });
+
+  // Download QR
+  btnDownload.addEventListener('click', () => {
+    const item = qrItems[qrIndex];
+    if (!item) return;
+    const link = document.createElement('a');
+    link.download = `qr-${item.label.replace(/\s+/g, '-').toLowerCase()}.png`;
+    link.href = qrCanvas.toDataURL('image/png');
+    link.click();
+  });
+
+  // Theme color
+  colorPicker.addEventListener('input', () => {
+    const hex = colorPicker.value;
+    data.themeColor = hex;
+    save();
+    applyTheme(hex);
+  });
+
+  // Logo via URL
+  logoUrl.addEventListener('change', () => {
+    const src = logoUrl.value.trim();
+    if (src && !isSafeImageUrl(src)) {
+      alert('Please enter a valid HTTPS image URL.');
+      return;
+    }
+    data.logoSrc = src;
+    save();
+    applyLogo(src);
+  });
+
+  // Logo via file upload
+  const MAX_LOGO_BYTES = 512 * 1024; // 512 KB
+  const ALLOWED_LOGO_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'];
+
+  btnUpload.addEventListener('click', () => logoFile.click());
+  logoFile.addEventListener('change', () => {
+    const file = logoFile.files[0];
+    if (!file) return;
+    if (!ALLOWED_LOGO_TYPES.includes(file.type)) {
+      alert('Please select a JPEG, PNG, GIF, WebP, or AVIF image.');
+      logoFile.value = '';
+      return;
+    }
+    if (file.size > MAX_LOGO_BYTES) {
+      alert('Image must be 512 KB or smaller.');
+      logoFile.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const src = e.target.result;
+      data.logoSrc = src;
+      save();
+      applyLogo(src);
+      logoUrl.value = '';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Remove logo
+  btnClear.addEventListener('click', () => {
+    data.logoSrc = '';
+    save();
+    applyLogo('');
+    logoUrl.value = '';
+    logoFile.value = '';
+  });
+
+  // Export contact data as JSON
+  btnExport.addEventListener('click', () => {
+    const exportData = {};
+    FIELDS.forEach(({ key }) => {
+      if (data[key] && data[key].trim()) exportData[key] = data[key].trim();
+    });
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = 'business-card.json';
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+  });
+
+  /* Init */
+  load();
+
+}());
+</script>
+</body>
+</html>
