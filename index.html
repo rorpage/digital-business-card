@@ -178,25 +178,8 @@
       font-weight: 500;
     }
 
-    .color-picker-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    input[type="color"] {
-      width: 44px;
-      height: 36px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      padding: 2px;
-      background: var(--input-bg);
-      flex-shrink: 0;
-    }
-
     #color-hex-input {
-      width: 90px;
+      width: 110px;
       border: 1.5px solid var(--border);
       border-radius: 8px;
       padding: 6px 10px;
@@ -208,6 +191,13 @@
       transition: border-color .2s;
     }
     #color-hex-input:focus { border-color: var(--theme); }
+
+    .field-prefix {
+      font-size: .85rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
 
     .img-input-group {
       display: flex;
@@ -415,13 +405,15 @@
       <div class="field-row">
         <span class="field-icon">💼</span>
         <label for="f-linkedin">LinkedIn</label>
-        <input id="f-linkedin" type="url" placeholder="https://linkedin.com/in/yourprofile" data-key="linkedin" />
+        <span class="field-prefix">linkedin.com/in/</span>
+        <input id="f-linkedin" type="text" placeholder="yourprofile" data-key="linkedin" />
       </div>
 
       <div class="field-row">
         <span class="field-icon">🐙</span>
         <label for="f-github">GitHub</label>
-        <input id="f-github" type="url" placeholder="https://github.com/yourusername" data-key="github" />
+        <span class="field-prefix">github.com/</span>
+        <input id="f-github" type="text" placeholder="yourusername" data-key="github" />
       </div>
 
     </div>
@@ -432,10 +424,7 @@
 
       <div class="settings-row">
         <span class="settings-label">🎨 Theme Color</span>
-        <div class="color-picker-group">
-          <input type="color" id="color-picker" value="#00b4ff" />
-          <input type="text" id="color-hex-input" value="#00b4ff" maxlength="7" placeholder="#000000" />
-        </div>
+        <input type="text" id="color-hex-input" value="#00b4ff" maxlength="7" placeholder="#000000" />
       </div>
 
       <div class="settings-row" style="flex-wrap:wrap; gap:8px;">
@@ -505,8 +494,8 @@
     { key: 'phone',    label: 'Phone',             prefix: 'tel:' },
     { key: 'website',  label: 'Personal Website',  prefix: '' },
     { key: 'company',  label: 'Company Website',   prefix: '' },
-    { key: 'linkedin', label: 'LinkedIn',          prefix: '' },
-    { key: 'github',   label: 'GitHub',            prefix: '' },
+    { key: 'linkedin', label: 'LinkedIn',          prefix: 'https://linkedin.com/in/' },
+    { key: 'github',   label: 'GitHub',            prefix: 'https://github.com/' },
   ];
 
   /* State */
@@ -526,7 +515,6 @@
   const btnPrev     = document.getElementById('btn-prev');
   const btnNext     = document.getElementById('btn-next');
   const btnDownload = document.getElementById('btn-download');
-  const colorPicker = document.getElementById('color-picker');
   const colorHexInput = document.getElementById('color-hex-input');
   const logoUrl     = document.getElementById('logo-url-input');
   const logoFile    = document.getElementById('logo-file-input');
@@ -544,6 +532,16 @@
       data = {};
     }
 
+    // Backward compat: strip full URL prefix from linkedin/github if previously stored as full URL
+    const LI_PREFIX = 'https://linkedin.com/in/';
+    const GH_PREFIX = 'https://github.com/';
+    if (data.linkedin && data.linkedin.startsWith(LI_PREFIX)) {
+      data.linkedin = data.linkedin.slice(LI_PREFIX.length);
+    }
+    if (data.github && data.github.startsWith(GH_PREFIX)) {
+      data.github = data.github.slice(GH_PREFIX.length);
+    }
+
     // Populate fields
     FIELDS.forEach(({ key }) => {
       const el = document.querySelector(`[data-key="${key}"]`);
@@ -552,7 +550,6 @@
 
     // Theme color
     if (data.themeColor) {
-      colorPicker.value = data.themeColor;
       colorHexInput.value = data.themeColor;
       applyTheme(data.themeColor);
     }
@@ -624,8 +621,8 @@
     if (data.phone)    lines.push('TEL;TYPE=CELL:' + data.phone.trim());
     if (data.website)  lines.push('URL:' + data.website.trim());
     if (data.company)  lines.push('URL;TYPE=WORK:' + data.company.trim());
-    if (data.linkedin) lines.push('X-SOCIALPROFILE;TYPE=linkedin:' + data.linkedin.trim());
-    if (data.github)   lines.push('X-SOCIALPROFILE;TYPE=github:' + data.github.trim());
+    if (data.linkedin) lines.push('X-SOCIALPROFILE;TYPE=linkedin:https://linkedin.com/in/' + data.linkedin.trim());
+    if (data.github)   lines.push('X-SOCIALPROFILE;TYPE=github:https://github.com/' + data.github.trim());
     lines.push('END:VCARD');
     return lines.join('\r\n');
   }
@@ -749,19 +746,10 @@
   });
 
   // Theme color
-  colorPicker.addEventListener('input', () => {
-    const hex = colorPicker.value;
-    colorHexInput.value = hex;
-    data.themeColor = hex;
-    save();
-    applyTheme(hex);
-  });
-
   colorHexInput.addEventListener('input', () => {
     const raw = colorHexInput.value.trim();
     const hex = raw.startsWith('#') ? raw : '#' + raw;
     if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
-      colorPicker.value = hex;
       data.themeColor = hex;
       save();
       applyTheme(hex);
