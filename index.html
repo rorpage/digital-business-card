@@ -12,14 +12,14 @@
       --theme: #00b4ff;
       --theme-dark: #0090cc;
       --radius: 12px;
-      --shadow: 0 2px 12px rgba(0,0,0,.4);
+      --shadow: 0 2px 12px rgba(0,0,0,.1);
       --gap: 16px;
-      --bg: #0f0f0f;
-      --surface: #1a1a1a;
-      --border: #2e2e2e;
-      --text: #e0e0e0;
-      --text-muted: #888;
-      --input-bg: #252525;
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --border: #d8d8d8;
+      --text: #1a1a1a;
+      --text-muted: #666;
+      --input-bg: #f8f8f8;
     }
 
     body {
@@ -178,6 +178,12 @@
       font-weight: 500;
     }
 
+    .color-picker-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     input[type="color"] {
       width: 44px;
       height: 36px;
@@ -186,7 +192,22 @@
       cursor: pointer;
       padding: 2px;
       background: var(--input-bg);
+      flex-shrink: 0;
     }
+
+    #color-hex-input {
+      width: 90px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: .9rem;
+      font-family: monospace;
+      background: var(--input-bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+    }
+    #color-hex-input:focus { border-color: var(--theme); }
 
     .img-input-group {
       display: flex;
@@ -404,7 +425,6 @@
       </div>
 
     </div>
-    </div>
 
     <!-- Settings -->
     <div class="card">
@@ -412,7 +432,10 @@
 
       <div class="settings-row">
         <span class="settings-label">🎨 Theme Color</span>
-        <input type="color" id="color-picker" value="#00b4ff" />
+        <div class="color-picker-group">
+          <input type="color" id="color-picker" value="#00b4ff" />
+          <input type="text" id="color-hex-input" value="#00b4ff" maxlength="7" placeholder="#000000" />
+        </div>
       </div>
 
       <div class="settings-row" style="flex-wrap:wrap; gap:8px;">
@@ -467,9 +490,7 @@
 
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"
-        integrity="sha384-OLBgp1GsljhM2TJ+sbHjaiH9txEUvgdDTAzHv2P24donTt6/529l+9Ua0vFImLlb"
-        crossorigin="anonymous"></script>
+<script src="qrcode.min.js"></script>
 <script>
 (function () {
   'use strict';
@@ -506,6 +527,7 @@
   const btnNext     = document.getElementById('btn-next');
   const btnDownload = document.getElementById('btn-download');
   const colorPicker = document.getElementById('color-picker');
+  const colorHexInput = document.getElementById('color-hex-input');
   const logoUrl     = document.getElementById('logo-url-input');
   const logoFile    = document.getElementById('logo-file-input');
   const btnUpload   = document.getElementById('btn-upload-logo');
@@ -531,6 +553,7 @@
     // Theme color
     if (data.themeColor) {
       colorPicker.value = data.themeColor;
+      colorHexInput.value = data.themeColor;
       applyTheme(data.themeColor);
     }
 
@@ -728,9 +751,21 @@
   // Theme color
   colorPicker.addEventListener('input', () => {
     const hex = colorPicker.value;
+    colorHexInput.value = hex;
     data.themeColor = hex;
     save();
     applyTheme(hex);
+  });
+
+  colorHexInput.addEventListener('input', () => {
+    const raw = colorHexInput.value.trim();
+    const hex = raw.startsWith('#') ? raw : '#' + raw;
+    if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
+      colorPicker.value = hex;
+      data.themeColor = hex;
+      save();
+      applyTheme(hex);
+    }
   });
 
   // Logo via URL
