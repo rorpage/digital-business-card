@@ -9,17 +9,23 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --theme: #1a73e8;
-      --theme-dark: #1558b0;
+      --theme: #00b4ff;
+      --theme-dark: #0090cc;
       --radius: 12px;
-      --shadow: 0 2px 12px rgba(0,0,0,.12);
+      --shadow: 0 2px 12px rgba(0,0,0,.4);
       --gap: 16px;
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --border: #2e2e2e;
+      --text: #e0e0e0;
+      --text-muted: #888;
+      --input-bg: #252525;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #f0f2f5;
-      color: #1c1c1e;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
@@ -27,13 +33,13 @@
 
     /* Header */
     #site-header {
-      background: var(--theme);
+      background: #00b4ff;
       color: #fff;
       padding: 16px var(--gap);
       display: flex;
       align-items: center;
       gap: 14px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      box-shadow: 0 0 24px rgba(0, 180, 255, 0.55), 0 2px 8px rgba(0,0,0,.4);
       position: sticky;
       top: 0;
       z-index: 10;
@@ -77,7 +83,7 @@
     }
     .mode-btn.active {
       background: rgba(255,255,255,.95);
-      color: var(--theme);
+      color: #00b4ff;
       border-radius: 20px;
     }
 
@@ -96,7 +102,7 @@
 
     /* Card */
     .card {
-      background: #fff;
+      background: var(--surface);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 20px;
@@ -108,7 +114,7 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: .08em;
-      color: #888;
+      color: var(--text-muted);
       margin-bottom: 14px;
     }
 
@@ -138,13 +144,15 @@
     .field-row input[type="tel"],
     .field-row textarea {
       flex: 1;
-      border: 1.5px solid #e0e0e0;
+      border: 1.5px solid var(--border);
       border-radius: 8px;
       padding: 10px 12px;
       font-size: .95rem;
       outline: none;
       transition: border-color .2s;
       font-family: inherit;
+      background: var(--input-bg);
+      color: var(--text);
     }
     .field-row input:focus,
     .field-row textarea:focus {
@@ -177,7 +185,7 @@
       border-radius: 8px;
       cursor: pointer;
       padding: 2px;
-      background: #f5f5f5;
+      background: var(--input-bg);
     }
 
     .img-input-group {
@@ -189,13 +197,15 @@
 
     .img-input-group input[type="text"] {
       flex: 1;
-      border: 1.5px solid #e0e0e0;
+      border: 1.5px solid var(--border);
       border-radius: 8px;
       padding: 8px 10px;
       font-size: .85rem;
       outline: none;
       transition: border-color .2s;
       min-width: 0;
+      background: var(--input-bg);
+      color: var(--text);
     }
     .img-input-group input[type="text"]:focus { border-color: var(--theme); }
 
@@ -223,13 +233,13 @@
 
     #qr-counter {
       font-size: .85rem;
-      color: #888;
+      color: var(--text-muted);
       margin-bottom: 6px;
       font-weight: 500;
     }
 
     #qr-card {
-      background: #fff;
+      background: var(--surface);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 28px 24px;
@@ -250,7 +260,7 @@
 
     #qr-field-value {
       font-size: .85rem;
-      color: #555;
+      color: var(--text-muted);
       text-align: center;
       word-break: break-all;
       max-width: 280px;
@@ -293,12 +303,12 @@
     .nav-btn:disabled { background: #ccc; cursor: default; }
 
     #qr-empty {
-      background: #fff;
+      background: var(--surface);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 48px 24px;
       text-align: center;
-      color: #888;
+      color: var(--text-muted);
       font-size: .95rem;
       width: 100%;
       max-width: 380px;
@@ -393,11 +403,7 @@
         <input id="f-github" type="url" placeholder="https://github.com/yourusername" data-key="github" />
       </div>
 
-      <div class="field-row">
-        <span class="field-icon">📍</span>
-        <label for="f-address">Address</label>
-        <textarea id="f-address" placeholder="Street, City, State, ZIP" data-key="address"></textarea>
-      </div>
+    </div>
     </div>
 
     <!-- Settings -->
@@ -406,7 +412,7 @@
 
       <div class="settings-row">
         <span class="settings-label">🎨 Theme Color</span>
-        <input type="color" id="color-picker" value="#1a73e8" />
+        <input type="color" id="color-picker" value="#00b4ff" />
       </div>
 
       <div class="settings-row" style="flex-wrap:wrap; gap:8px;">
@@ -480,7 +486,6 @@
     { key: 'company',  label: 'Company Website',   prefix: '' },
     { key: 'linkedin', label: 'LinkedIn',          prefix: '' },
     { key: 'github',   label: 'GitHub',            prefix: '' },
-    { key: 'address',  label: 'Address',           prefix: '' },
   ];
 
   /* State */
@@ -598,10 +603,6 @@
     if (data.company)  lines.push('URL;TYPE=WORK:' + data.company.trim());
     if (data.linkedin) lines.push('X-SOCIALPROFILE;TYPE=linkedin:' + data.linkedin.trim());
     if (data.github)   lines.push('X-SOCIALPROFILE;TYPE=github:' + data.github.trim());
-    if (data.address) {
-      const addr = data.address.trim().replace(/\r?\n/g, ', ');
-      lines.push('ADR;TYPE=HOME:;;' + escapeVCard(addr) + ';;;;');
-    }
     lines.push('END:VCARD');
     return lines.join('\r\n');
   }
@@ -652,7 +653,13 @@
     btnNext.disabled = qrIndex === qrItems.length - 1;
 
     // QR size: viewport minus ~96px (card padding 24px×2 + nav/counter margins)
-    const size = Math.min(window.innerWidth - 96, 280);
+    const size = Math.max(120, Math.min(window.innerWidth - 96, 280));
+
+    if (typeof QRCode === 'undefined') {
+      qrLabel.textContent = item.label;
+      qrValue.textContent = 'QR library failed to load. Please check your internet connection and reload.';
+      return;
+    }
 
     QRCode.toCanvas(qrCanvas, item.qrContent, {
       width: size,
