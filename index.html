@@ -371,20 +371,20 @@
 
       <div class="field-row">
         <span class="field-icon">🌐</span>
-        <label for="f-website">Website</label>
+        <label for="f-website">Personal Website</label>
         <input id="f-website" type="url" placeholder="https://yourwebsite.com" data-key="website" />
+      </div>
+
+      <div class="field-row">
+        <span class="field-icon">🏢</span>
+        <label for="f-company">Company Website</label>
+        <input id="f-company" type="url" placeholder="https://yourcompany.com" data-key="company" />
       </div>
 
       <div class="field-row">
         <span class="field-icon">💼</span>
         <label for="f-linkedin">LinkedIn</label>
         <input id="f-linkedin" type="url" placeholder="https://linkedin.com/in/yourprofile" data-key="linkedin" />
-      </div>
-
-      <div class="field-row">
-        <span class="field-icon">𝕏</span>
-        <label for="f-twitter">X / Twitter</label>
-        <input id="f-twitter" type="url" placeholder="https://x.com/yourhandle" data-key="twitter" />
       </div>
 
       <div class="field-row">
@@ -420,6 +420,15 @@
 
       <div class="settings-row" style="justify-content:flex-end;">
         <button class="btn-sm" id="btn-clear-logo" style="background:#e53935;">Remove Logo</button>
+      </div>
+    </div>
+
+    <!-- Data export -->
+    <div class="card">
+      <div class="card-title">Data</div>
+      <div class="settings-row">
+        <span class="settings-label">📤 Export contact data</span>
+        <button class="btn-sm" id="btn-export-json">Export JSON</button>
       </div>
     </div>
 
@@ -464,14 +473,14 @@
 
   /* Field definitions */
   const FIELDS = [
-    { key: 'name',     label: 'Name',       prefix: '' },
-    { key: 'email',    label: 'Email',      prefix: 'mailto:' },
-    { key: 'phone',    label: 'Phone',      prefix: 'tel:' },
-    { key: 'website',  label: 'Website',    prefix: '' },
-    { key: 'linkedin', label: 'LinkedIn',   prefix: '' },
-    { key: 'twitter',  label: 'X / Twitter',prefix: '' },
-    { key: 'github',   label: 'GitHub',     prefix: '' },
-    { key: 'address',  label: 'Address',    prefix: '' },
+    { key: 'name',     label: 'Name',             prefix: '' },
+    { key: 'email',    label: 'Email',             prefix: 'mailto:' },
+    { key: 'phone',    label: 'Phone',             prefix: 'tel:' },
+    { key: 'website',  label: 'Personal Website',  prefix: '' },
+    { key: 'company',  label: 'Company Website',   prefix: '' },
+    { key: 'linkedin', label: 'LinkedIn',          prefix: '' },
+    { key: 'github',   label: 'GitHub',            prefix: '' },
+    { key: 'address',  label: 'Address',           prefix: '' },
   ];
 
   /* State */
@@ -496,6 +505,7 @@
   const logoFile    = document.getElementById('logo-file-input');
   const btnUpload   = document.getElementById('btn-upload-logo');
   const btnClear    = document.getElementById('btn-clear-logo');
+  const btnExport   = document.getElementById('btn-export-json');
   const headerLogo  = document.getElementById('header-logo');
   const modeBtns    = document.querySelectorAll('.mode-btn');
 
@@ -570,6 +580,32 @@
     headerLogo.classList.add('visible');
   }
 
+  /* vCard helpers */
+  function escapeVCard(str) {
+    return str
+      .replace(/\\/g, '\\\\')
+      .replace(/,/g, '\\,')
+      .replace(/;/g, '\\;')
+      .replace(/\n/g, '\\n');
+  }
+
+  function buildVCard() {
+    const lines = ['BEGIN:VCARD', 'VERSION:3.0'];
+    if (data.name)     lines.push('FN:' + escapeVCard(data.name.trim()));
+    if (data.email)    lines.push('EMAIL;TYPE=INTERNET:' + data.email.trim());
+    if (data.phone)    lines.push('TEL;TYPE=CELL:' + data.phone.trim());
+    if (data.website)  lines.push('URL:' + data.website.trim());
+    if (data.company)  lines.push('URL;TYPE=WORK:' + data.company.trim());
+    if (data.linkedin) lines.push('X-SOCIALPROFILE;TYPE=linkedin:' + data.linkedin.trim());
+    if (data.github)   lines.push('X-SOCIALPROFILE;TYPE=github:' + data.github.trim());
+    if (data.address) {
+      const addr = data.address.trim().replace(/\r?\n/g, ', ');
+      lines.push('ADR;TYPE=HOME:;;' + escapeVCard(addr) + ';;;;');
+    }
+    lines.push('END:VCARD');
+    return lines.join('\r\n');
+  }
+
   /* Build QR items list */
   function buildQrItems() {
     qrItems = FIELDS
@@ -579,6 +615,15 @@
         const qrContent = prefix && !raw.startsWith(prefix) ? prefix + raw : raw;
         return { label, value: raw, qrContent };
       });
+
+    // Prepend a Contact Card (vCard) QR when any field is filled
+    if (qrItems.length > 0) {
+      qrItems.unshift({
+        label: 'Contact Card',
+        value: 'Scan to save all contact details',
+        qrContent: buildVCard(),
+      });
+    }
   }
 
   /* Render QR */
@@ -729,6 +774,21 @@
     applyLogo('');
     logoUrl.value = '';
     logoFile.value = '';
+  });
+
+  // Export contact data as JSON
+  btnExport.addEventListener('click', () => {
+    const exportData = {};
+    FIELDS.forEach(({ key }) => {
+      if (data[key] && data[key].trim()) exportData[key] = data[key].trim();
+    });
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = 'business-card.json';
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
   });
 
   /* Init */
