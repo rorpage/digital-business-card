@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Digital Business Card</title>
   <style>
-    /* ── Reset & base ───────────────────────────────────────────────────── */
+    /* Reset & base */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -25,7 +25,7 @@
       flex-direction: column;
     }
 
-    /* ── Header ─────────────────────────────────────────────────────────── */
+    /* Header */
     #site-header {
       background: var(--theme);
       color: #fff;
@@ -56,7 +56,7 @@
       letter-spacing: .02em;
     }
 
-    /* ── Mode toggle ─────────────────────────────────────────────────────── */
+    /* Mode toggle */
     #mode-toggle {
       display: flex;
       background: rgba(255,255,255,.2);
@@ -81,7 +81,7 @@
       border-radius: 20px;
     }
 
-    /* ── Main layout ─────────────────────────────────────────────────────── */
+    /* Main layout */
     main {
       flex: 1;
       padding: var(--gap);
@@ -90,11 +90,11 @@
       margin: 0 auto;
     }
 
-    /* ── Panels ──────────────────────────────────────────────────────────── */
+    /* Panels */
     .panel { display: none; }
     .panel.active { display: block; }
 
-    /* ── Card ────────────────────────────────────────────────────────────── */
+    /* Card */
     .card {
       background: #fff;
       border-radius: var(--radius);
@@ -112,7 +112,7 @@
       margin-bottom: 14px;
     }
 
-    /* ── Form fields ─────────────────────────────────────────────────────── */
+    /* Form fields */
     .field-row {
       display: flex;
       align-items: center;
@@ -155,7 +155,7 @@
       min-height: 72px;
     }
 
-    /* ── Settings ────────────────────────────────────────────────────────── */
+    /* Settings */
     .settings-row {
       display: flex;
       align-items: center;
@@ -213,7 +213,7 @@
     }
     .btn-sm:hover { background: var(--theme-dark); }
 
-    /* ── QR viewer (mobile-first) ────────────────────────────────────────── */
+    /* QR viewer (mobile-first) */
     #qr-panel {
       display: none;
       flex-direction: column;
@@ -305,7 +305,7 @@
     }
     #qr-empty .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
 
-    /* ── Download button ─────────────────────────────────────────────────── */
+    /* Download button */
     #btn-download {
       margin-top: 12px;
       background: transparent;
@@ -320,19 +320,19 @@
     }
     #btn-download:hover { background: var(--theme); color: #fff; }
 
-    /* ── Desktop enhancements ────────────────────────────────────────────── */
+    /* Desktop enhancements */
     @media (min-width: 640px) {
       #qr-card { max-width: 460px; }
       #qr-canvas-wrapper canvas { width: 300px !important; height: 300px !important; }
     }
 
-    /* ── Hidden file input ───────────────────────────────────────────────── */
+    /* Hidden file input */
     #logo-file-input { display: none; }
   </style>
 </head>
 <body>
 
-<!-- ── Header ──────────────────────────────────────────────────────────── -->
+<!-- Header -->
 <header id="site-header">
   <img id="header-logo" alt="Logo" />
   <span id="header-title">Digital Business Card</span>
@@ -344,7 +344,7 @@
 
 <main>
 
-  <!-- ── Edit panel ───────────────────────────────────────────────────── -->
+  <!-- Edit panel -->
   <div id="edit-panel" class="panel active">
 
     <!-- Contact info -->
@@ -425,7 +425,7 @@
 
   </div><!-- /edit-panel -->
 
-  <!-- ── QR panel ──────────────────────────────────────────────────────── -->
+  <!-- QR panel -->
   <div id="qr-panel" class="panel">
 
     <div id="qr-counter"></div>
@@ -459,10 +459,10 @@
 (function () {
   'use strict';
 
-  /* ── Storage key ─────────────────────────────────────────────────────── */
+  /* Storage key */
   const STORAGE_KEY = 'dbc_data';
 
-  /* ── Field definitions ───────────────────────────────────────────────── */
+  /* Field definitions */
   const FIELDS = [
     { key: 'name',     label: 'Name',       prefix: '' },
     { key: 'email',    label: 'Email',      prefix: 'mailto:' },
@@ -474,12 +474,12 @@
     { key: 'address',  label: 'Address',    prefix: '' },
   ];
 
-  /* ── State ───────────────────────────────────────────────────────────── */
+  /* State */
   let data = {};
   let qrItems = [];    // [{label, value, qrContent}]
   let qrIndex = 0;
 
-  /* ── DOM refs ────────────────────────────────────────────────────────── */
+  /* DOM refs */
   const editPanel   = document.getElementById('edit-panel');
   const qrPanel     = document.getElementById('qr-panel');
   const qrCard      = document.getElementById('qr-card');
@@ -499,7 +499,7 @@
   const headerLogo  = document.getElementById('header-logo');
   const modeBtns    = document.querySelectorAll('.mode-btn');
 
-  /* ── Load from localStorage ──────────────────────────────────────────── */
+  /* Load from localStorage */
   function load() {
     try {
       data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -526,12 +526,12 @@
     }
   }
 
-  /* ── Save to localStorage ────────────────────────────────────────────── */
+  /* Save to localStorage */
   function save() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }
 
-  /* ── Theme ───────────────────────────────────────────────────────────── */
+  /* Theme */
   function applyTheme(hex) {
     document.documentElement.style.setProperty('--theme', hex);
     // derive a darker shade (~20% darker) for hover
@@ -549,7 +549,7 @@
     return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
   }
 
-  /* ── URL validation helper ───────────────────────────────────────────── */
+  /* URL validation helper */
   function isSafeImageUrl(url) {
     try {
       const u = new URL(url);
@@ -559,7 +559,7 @@
     }
   }
 
-  /* ── Logo ────────────────────────────────────────────────────────────── */
+  /* Logo */
   function applyLogo(src) {
     if (!src) {
       headerLogo.classList.remove('visible');
@@ -570,7 +570,7 @@
     headerLogo.classList.add('visible');
   }
 
-  /* ── Build QR items list ─────────────────────────────────────────────── */
+  /* Build QR items list */
   function buildQrItems() {
     qrItems = FIELDS
       .filter(({ key }) => data[key] && data[key].trim())
@@ -581,7 +581,7 @@
       });
   }
 
-  /* ── Render QR ───────────────────────────────────────────────────────── */
+  /* Render QR */
   function renderQr() {
     buildQrItems();
 
@@ -621,7 +621,7 @@
     });
   }
 
-  /* ── Mode switching ──────────────────────────────────────────────────── */
+  /* Mode switching */
   function switchMode(mode) {
     modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
     if (mode === 'edit') {
@@ -635,7 +635,7 @@
     }
   }
 
-  /* ── Event listeners ─────────────────────────────────────────────────── */
+  /* Event listeners */
 
   // Field inputs → save
   FIELDS.forEach(({ key }) => {
@@ -731,7 +731,7 @@
     logoFile.value = '';
   });
 
-  /* ── Init ────────────────────────────────────────────────────────────── */
+  /* Init */
   load();
 
 }());
