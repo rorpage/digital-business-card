@@ -107,12 +107,12 @@
     if (data.phone)       lines.push(`TEL;TYPE=CELL:${data.phone.trim()}`);
 
     const urls = [];
-    if (data.website)  urls.push({ url: data.website.trim(),                                   label: 'Personal Website' });
-    if (data.company)  urls.push({ url: data.company.trim(),                                   label: 'Company Website' });
-    if (data.linkedin) urls.push({ url: `https://linkedin.com/in/${data.linkedin.trim()}`,     label: 'LinkedIn' });
-    if (data.github)   urls.push({ url: `https://github.com/${data.github.trim()}`,            label: 'GitHub' });
+    if (data.website)  urls.push(data.website.trim());
+    if (data.company)  urls.push(data.company.trim());
+    if (data.linkedin) urls.push(`https://linkedin.com/in/${data.linkedin.trim()}`);
+    if (data.github)   urls.push(`https://github.com/${data.github.trim()}`);
 
-    const urlLines = urls.map(({ url, label }) => `URL;TYPE=${label}:${url}`);
+    const urlLines = urls.map(url => `URL:${url}`);
     lines.push(...urlLines);
 
     lines.push('END:VCARD');
