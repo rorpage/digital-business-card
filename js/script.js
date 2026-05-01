@@ -105,10 +105,16 @@
     if (data.companyName) lines.push('ORG:' + escapeVCard(data.companyName.trim()));
     if (data.email)       lines.push('EMAIL;TYPE=INTERNET:' + data.email.trim());
     if (data.phone)       lines.push('TEL;TYPE=CELL:' + data.phone.trim());
-    if (data.website)     lines.push('URL;TYPE=Personal Website:' + data.website.trim());
-    if (data.company)     lines.push('URL;TYPE=Company Website:' + data.company.trim());
-    if (data.linkedin)    lines.push('URL;TYPE=LinkedIn:https://linkedin.com/in/' + data.linkedin.trim());
-    if (data.github)      lines.push('URL;TYPE=GitHub:https://github.com/' + data.github.trim());
+    let urlIndex = 1;
+    const addUrl = (url, label) => {
+      lines.push('item' + urlIndex + '.URL:' + url);
+      lines.push('item' + urlIndex + '.X-ABLabel:' + label);
+      urlIndex++;
+    };
+    if (data.website)  addUrl(data.website.trim(), 'Personal Website');
+    if (data.company)  addUrl(data.company.trim(), 'Company Website');
+    if (data.linkedin) addUrl('https://linkedin.com/in/' + data.linkedin.trim(), 'LinkedIn');
+    if (data.github)   addUrl('https://github.com/' + data.github.trim(), 'GitHub');
     lines.push('END:VCARD');
     return lines.join('\r\n');
   }
