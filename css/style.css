@@ -2,8 +2,8 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --theme: #4f7d9b;
-  --theme-dark: #3f647c;
+  --theme: #507c9b;
+  --theme-dark: #40637c;
   --radius: 12px;
   --shadow: 0 2px 12px rgba(0,0,0,.1);
   --gap: 16px;
@@ -26,13 +26,13 @@ body {
 
 /* Header */
 #site-header {
-  background: #4f7d9b;
+  background: #507c9b;
   color: #fff;
   padding: 16px var(--gap);
   display: flex;
   align-items: center;
   gap: 14px;
-  box-shadow: 0 0 24px rgba(79, 125, 155, 0.55), 0 2px 8px rgba(0,0,0,.4);
+  box-shadow: 0 0 24px rgba(80, 124, 155, 0.55), 0 2px 8px rgba(0,0,0,.4);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -66,7 +66,7 @@ body {
 }
 .mode-btn.active {
   background: rgba(255,255,255,.95);
-  color: #4f7d9b;
+  color: #507c9b;
   border-radius: 20px;
 }
 
