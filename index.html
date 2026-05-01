@@ -430,6 +430,12 @@
       </div>
 
       <div class="field-row">
+        <span class="field-icon">🏢</span>
+        <label for="f-company-name">Company Name</label>
+        <input id="f-company-name" type="text" placeholder="Company or Organization" data-key="companyName" />
+      </div>
+
+      <div class="field-row">
         <span class="field-icon">📧</span>
         <label for="f-email">Email</label>
         <input id="f-email" type="email" placeholder="Email Address" data-key="email" />
@@ -548,13 +554,14 @@
 
   /* Field definitions */
   const FIELDS = [
-    { key: 'name',     label: 'Name',             prefix: '' },
-    { key: 'email',    label: 'Email',             prefix: 'mailto:' },
-    { key: 'phone',    label: 'Phone',             prefix: 'tel:' },
-    { key: 'website',  label: 'Personal Website',  prefix: '' },
-    { key: 'company',  label: 'Company Website',   prefix: '' },
-    { key: 'linkedin', label: 'LinkedIn',          prefix: 'https://linkedin.com/in/' },
-    { key: 'github',   label: 'GitHub',            prefix: 'https://github.com/' },
+    { key: 'name',        label: 'Name',             prefix: '' },
+    { key: 'companyName', label: 'Company Name',     prefix: '' },
+    { key: 'email',       label: 'Email',             prefix: 'mailto:' },
+    { key: 'phone',       label: 'Phone',             prefix: 'tel:' },
+    { key: 'website',     label: 'Personal Website',  prefix: '' },
+    { key: 'company',     label: 'Company Website',   prefix: '' },
+    { key: 'linkedin',    label: 'LinkedIn',          prefix: 'https://linkedin.com/in/' },
+    { key: 'github',      label: 'GitHub',            prefix: 'https://github.com/' },
   ];
 
   /* State */
@@ -675,8 +682,9 @@
 
   function buildVCard() {
     const lines = ['BEGIN:VCARD', 'VERSION:3.0'];
-    if (data.name)     lines.push('FN:' + escapeVCard(data.name.trim()));
-    if (data.email)    lines.push('EMAIL;TYPE=INTERNET:' + data.email.trim());
+    if (data.name)        lines.push('FN:' + escapeVCard(data.name.trim()));
+    if (data.companyName) lines.push('ORG:' + escapeVCard(data.companyName.trim()));
+    if (data.email)       lines.push('EMAIL;TYPE=INTERNET:' + data.email.trim());
     if (data.phone)    lines.push('TEL;TYPE=CELL:' + data.phone.trim());
     let urlCount = 0;
     if (data.website) {
@@ -698,7 +706,7 @@
   /* Build QR items list */
   function buildQrItems() {
     qrItems = FIELDS
-      .filter(({ key }) => key !== 'name' && data[key] && data[key].trim())
+      .filter(({ key }) => key !== 'name' && key !== 'companyName' && data[key] && data[key].trim())
       .map(({ key, label, prefix }) => {
         const raw = data[key].trim();
         const qrContent = prefix && !raw.startsWith(prefix) ? prefix + raw : raw;
