@@ -199,6 +199,57 @@
       flex-shrink: 0;
     }
 
+    /* Stacked field row for long-prefix fields (LinkedIn, GitHub) */
+    .field-row-stacked {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+    }
+    .field-row-stacked .field-row-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .field-row-stacked .field-row-top label {
+      display: block;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .field-row-stacked .field-row-bottom {
+      display: flex;
+      align-items: stretch;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--input-bg);
+      transition: border-color .2s;
+    }
+    .field-row-stacked .field-row-bottom:focus-within {
+      border-color: var(--theme);
+    }
+    .field-row-stacked .field-prefix {
+      padding: 10px 10px;
+      font-size: .82rem;
+      color: var(--text-muted);
+      background: var(--input-bg);
+      border-right: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+    }
+    .field-row-stacked input[type="text"] {
+      flex: 1;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      padding: 10px 12px;
+      font-size: .95rem;
+      outline: none;
+      font-family: inherit;
+      color: var(--text);
+      min-width: 0;
+    }
+
     .img-input-group {
       display: flex;
       gap: 8px;
@@ -379,6 +430,12 @@
       </div>
 
       <div class="field-row">
+        <span class="field-icon">🏢</span>
+        <label for="f-company-name">Company Name</label>
+        <input id="f-company-name" type="text" placeholder="Company or Organization" data-key="companyName" />
+      </div>
+
+      <div class="field-row">
         <span class="field-icon">📧</span>
         <label for="f-email">Email</label>
         <input id="f-email" type="email" placeholder="Email Address" data-key="email" />
@@ -402,18 +459,26 @@
         <input id="f-company" type="url" placeholder="https://yourcompany.com" data-key="company" />
       </div>
 
-      <div class="field-row">
-        <span class="field-icon">💼</span>
-        <label for="f-linkedin">LinkedIn</label>
-        <span class="field-prefix">https://linkedin.com/in/</span>
-        <input id="f-linkedin" type="text" placeholder="yourprofile" data-key="linkedin" />
+      <div class="field-row field-row-stacked">
+        <div class="field-row-top">
+          <span class="field-icon">💼</span>
+          <label for="f-linkedin">LinkedIn Profile</label>
+        </div>
+        <div class="field-row-bottom">
+          <span class="field-prefix">linkedin.com/in/</span>
+          <input id="f-linkedin" type="text" placeholder="yourprofile" data-key="linkedin" />
+        </div>
       </div>
 
-      <div class="field-row">
-        <span class="field-icon">🐙</span>
-        <label for="f-github">GitHub</label>
-        <span class="field-prefix">https://github.com/</span>
-        <input id="f-github" type="text" placeholder="yourusername" data-key="github" />
+      <div class="field-row field-row-stacked">
+        <div class="field-row-top">
+          <span class="field-icon">🐙</span>
+          <label for="f-github">GitHub Profile</label>
+        </div>
+        <div class="field-row-bottom">
+          <span class="field-prefix">github.com/</span>
+          <input id="f-github" type="text" placeholder="yourusername" data-key="github" />
+        </div>
       </div>
 
     </div>
@@ -489,13 +554,14 @@
 
   /* Field definitions */
   const FIELDS = [
-    { key: 'name',     label: 'Name',             prefix: '' },
-    { key: 'email',    label: 'Email',             prefix: 'mailto:' },
-    { key: 'phone',    label: 'Phone',             prefix: 'tel:' },
-    { key: 'website',  label: 'Personal Website',  prefix: '' },
-    { key: 'company',  label: 'Company Website',   prefix: '' },
-    { key: 'linkedin', label: 'LinkedIn',          prefix: 'https://linkedin.com/in/' },
-    { key: 'github',   label: 'GitHub',            prefix: 'https://github.com/' },
+    { key: 'name',        label: 'Name',             prefix: '' },
+    { key: 'companyName', label: 'Company Name',     prefix: '' },
+    { key: 'email',       label: 'Email',             prefix: 'mailto:' },
+    { key: 'phone',       label: 'Phone',             prefix: 'tel:' },
+    { key: 'website',     label: 'Personal Website',  prefix: '' },
+    { key: 'company',     label: 'Company Website',   prefix: '' },
+    { key: 'linkedin',    label: 'LinkedIn',          prefix: 'https://linkedin.com/in/' },
+    { key: 'github',      label: 'GitHub',            prefix: 'https://github.com/' },
   ];
 
   /* State */
@@ -616,11 +682,21 @@
 
   function buildVCard() {
     const lines = ['BEGIN:VCARD', 'VERSION:3.0'];
-    if (data.name)     lines.push('FN:' + escapeVCard(data.name.trim()));
-    if (data.email)    lines.push('EMAIL;TYPE=INTERNET:' + data.email.trim());
+    if (data.name)        lines.push('FN:' + escapeVCard(data.name.trim()));
+    if (data.companyName) lines.push('ORG:' + escapeVCard(data.companyName.trim()));
+    if (data.email)       lines.push('EMAIL;TYPE=INTERNET:' + data.email.trim());
     if (data.phone)    lines.push('TEL;TYPE=CELL:' + data.phone.trim());
-    if (data.website)  lines.push('URL:' + data.website.trim());
-    if (data.company)  lines.push('URL;TYPE=WORK:' + data.company.trim());
+    let urlCount = 0;
+    if (data.website) {
+      urlCount++;
+      lines.push('item' + urlCount + '.URL:' + data.website.trim());
+      lines.push('item' + urlCount + '.X-ABLabel:Personal Website');
+    }
+    if (data.company) {
+      urlCount++;
+      lines.push('item' + urlCount + '.URL:' + data.company.trim());
+      lines.push('item' + urlCount + '.X-ABLabel:Company Website');
+    }
     if (data.linkedin) lines.push('X-SOCIALPROFILE;TYPE=linkedin:https://linkedin.com/in/' + data.linkedin.trim());
     if (data.github)   lines.push('X-SOCIALPROFILE;TYPE=github:https://github.com/' + data.github.trim());
     lines.push('END:VCARD');
@@ -630,7 +706,7 @@
   /* Build QR items list */
   function buildQrItems() {
     qrItems = FIELDS
-      .filter(({ key }) => data[key] && data[key].trim())
+      .filter(({ key }) => key !== 'name' && key !== 'companyName' && data[key] && data[key].trim())
       .map(({ key, label, prefix }) => {
         const raw = data[key].trim();
         const qrContent = prefix && !raw.startsWith(prefix) ? prefix + raw : raw;
@@ -685,7 +761,7 @@
       width: size,
       margin: 2,
       color: {
-        dark: '#1c1c1e',
+        dark: /^#[0-9a-fA-F]{6}$/.test(data.themeColor) ? data.themeColor : '#00b4ff',
         light: '#ffffff',
       },
     }, function (err) {
