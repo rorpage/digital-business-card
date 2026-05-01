@@ -675,7 +675,6 @@
   function escapeVCard(str) {
     return str
       .replace(/\\/g, '\\\\')
-      .replace(/,/g, '\\,')
       .replace(/;/g, '\\;')
       .replace(/\n/g, '\\n');
   }
@@ -697,8 +696,16 @@
       lines.push('item' + urlCount + '.URL:' + data.company.trim());
       lines.push('item' + urlCount + '.X-ABLabel:Company Website');
     }
-    if (data.linkedin) lines.push('X-SOCIALPROFILE;TYPE=linkedin:https://linkedin.com/in/' + data.linkedin.trim());
-    if (data.github)   lines.push('X-SOCIALPROFILE;TYPE=github:https://github.com/' + data.github.trim());
+    if (data.linkedin) {
+      urlCount++;
+      lines.push('item' + urlCount + '.URL:https://linkedin.com/in/' + data.linkedin.trim());
+      lines.push('item' + urlCount + '.X-ABLabel:LinkedIn');
+    }
+    if (data.github) {
+      urlCount++;
+      lines.push('item' + urlCount + '.URL:https://github.com/' + data.github.trim());
+      lines.push('item' + urlCount + '.X-ABLabel:GitHub');
+    }
     lines.push('END:VCARD');
     return lines.join('\r\n');
   }
