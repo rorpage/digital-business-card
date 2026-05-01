@@ -101,20 +101,20 @@
 
   function buildVCard() {
     const lines = ['BEGIN:VCARD', 'VERSION:3.0'];
-    if (data.name)        lines.push('FN:' + escapeVCard(data.name.trim()));
-    if (data.companyName) lines.push('ORG:' + escapeVCard(data.companyName.trim()));
-    if (data.email)       lines.push('EMAIL;TYPE=INTERNET:' + data.email.trim());
-    if (data.phone)       lines.push('TEL;TYPE=CELL:' + data.phone.trim());
-    let urlIndex = 1;
-    const addUrl = (url, label) => {
-      lines.push('item' + urlIndex + '.URL:' + url);
-      lines.push('item' + urlIndex + '.X-ABLabel:' + label);
-      urlIndex++;
-    };
-    if (data.website)  addUrl(data.website.trim(), 'Personal Website');
-    if (data.company)  addUrl(data.company.trim(), 'Company Website');
-    if (data.linkedin) addUrl('https://linkedin.com/in/' + data.linkedin.trim(), 'LinkedIn');
-    if (data.github)   addUrl('https://github.com/' + data.github.trim(), 'GitHub');
+    if (data.name)        lines.push(`FN:${escapeVCard(data.name.trim())}`);
+    if (data.companyName) lines.push(`ORG:${escapeVCard(data.companyName.trim())}`);
+    if (data.email)       lines.push(`EMAIL;TYPE=INTERNET:${data.email.trim()}`);
+    if (data.phone)       lines.push(`TEL;TYPE=CELL:${data.phone.trim()}`);
+
+    const urls = [];
+    if (data.website)  urls.push({ url: data.website.trim(),                                   label: 'Personal Website' });
+    if (data.company)  urls.push({ url: data.company.trim(),                                   label: 'Company Website' });
+    if (data.linkedin) urls.push({ url: `https://linkedin.com/in/${data.linkedin.trim()}`,     label: 'LinkedIn' });
+    if (data.github)   urls.push({ url: `https://github.com/${data.github.trim()}`,            label: 'GitHub' });
+
+    const urlLines = urls.map(({ url, label }) => `URL;TYPE=${label}:${url}`);
+    lines.push(...urlLines);
+
     lines.push('END:VCARD');
     return lines.join('\r\n');
   }
