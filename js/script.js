@@ -107,8 +107,8 @@
     if (data.phone)       lines.push(`TEL;TYPE=CELL:${data.phone.trim()}`);
 
     const urls = [];
-    if (data.website)  urls.push(data.website.trim());
     if (data.company)  urls.push(data.company.trim());
+    if (data.website)  urls.push(data.website.trim());
     if (data.linkedin) urls.push(`https://linkedin.com/in/${data.linkedin.trim()}`);
     if (data.github)   urls.push(`https://github.com/${data.github.trim()}`);
 
@@ -177,7 +177,7 @@
       width: size,
       margin: 2,
       color: {
-        dark: /^#[0-9a-fA-F]{6}$/.test(data.themeColor) ? data.themeColor : '#4f7d9b',
+        dark: /^#[0-9a-fA-F]{6}$/.test(data.themeColor) ? data.themeColor : '#507c9b',
         light: '#ffffff',
       },
     }, function (err) {
