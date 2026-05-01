@@ -15,12 +15,6 @@ Deployed via GitHub Pages: <https://rorpage.github.io/digital-business-card/>
 - **Theme color picker** - recolors the header and all interactive elements via CSS custom properties; default color is `#507c9b`
 - **Header logo** - upload an image file or paste an HTTPS URL
 
-## Security
-
-- CDN script (`QRCode.js`) pinned with an SRI hash (`integrity="sha384-..."`)
-- Logo URL input validates `https:` protocol only
-- File uploads restricted to safe raster types (JPEG, PNG, GIF, WebP, AVIF), capped at 512 KB to prevent `localStorage` quota exhaustion
-
 ## Deployment
 
 The site is deployed automatically to GitHub Pages on every push to `main` via the workflow at `.github/workflows/deploy.yml`.
